@@ -8,7 +8,7 @@
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.jsw
+// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
 // @downloadURL  https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
 // ==/UserScript==
 
@@ -16,15 +16,15 @@
 
 window.jQuery360 = $.noConflict(true);
 
-$(document).ready(function(){
-    function sanitizeData(data){
+$(document).ready(function () {
+    function sanitizeData(data) {
         var san_roll = {
             name: "",
             die: "",
             count: "",
             mods: []
         };
-        // prepare data (currently json object)
+
         var roll;
         try {
             roll = JSON.parse(data);
@@ -36,34 +36,29 @@ $(document).ready(function(){
         var v = roll.rolls[0];
         var current_roll = v.vre.rolls;
 
-        $.each(current_roll, function(i, v) {
-            if (this.type == "R"){
+        $.each(current_roll, function () {
+            if (this.type === "R") {
                 san_roll.die = this.sides;
                 san_roll.count = this.dice;
-            }
-            else if (this.type == "M"){
+            } else if (this.type === "M") {
                 san_roll.mods.push(this.expr);
             }
         });
-        // make talespire url
+
         makeTalespireLink(san_roll);
     }
 
-    function makeTalespireLink(data){
-        var modifiers = "";
-        $.each(data.mods, function(i, v) {
-            modifiers = modifiers.concat(v);
-        });
+    function makeTalespireLink(data) {
+        var modifiers = data.mods.join('');
+        var sum;
+        try {
+            sum = new Function("return " + modifiers)();
+        } catch (e) {
+            console.error("Failed to evaluate modifiers:", e);
+            return;
+        }
 
-        console.log(modifiers);
-        var sum = eval(modifiers);
-        var talespire_string = "";
-        if (sum >= 0){
-            talespire_string = "talespire://dice/" + data.count + "d" + data.die + "+" + sum;
-        }
-        else {
-            talespire_string = "talespire://dice/" + data.count + "d" + data.die + "-" + sum;
-        }
+        var talespire_string = "talespire://dice/" + data.count + "d" + data.die + (sum >= 0 ? "+" + sum : sum);
         console.log(talespire_string);
         location.href = talespire_string;
     }
@@ -72,13 +67,12 @@ $(document).ready(function(){
         send = window.XMLHttpRequest.prototype.send;
 
     function openReplacement(method, url, async, user, password) {
-        this._url = url; // store the URL
+        this._url = url;
         return open.apply(this, arguments);
     }
 
     function sendReplacement(data) {
-        // Only intercept requests related to specific Roll20 roll actions
-        if (this._url.includes("roll")) {
+        if (this._url.includes("/rolls/")) {
             try {
                 var parsedData = JSON.parse(data);
                 if (parsedData && parsedData.rolls) {
@@ -107,11 +101,10 @@ $(document).ready(function(){
     window.XMLHttpRequest.prototype.send = sendReplacement;
 });
 
-(function() {
+(function () {
     'use strict';
 
-    // Your code here...
-    $("button[type='roll']").click(function(event){
+    $(document).on("click", "button[type='roll']", function (event) {
         event.preventDefault();
         $(this).addClass("ivebeenclicked");
     });

@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         Talespire20
 // @namespace    https://drewers.dev
-// @version      0.4
+// @version      0.3
 // @description  Roll20 OGL Sheet Roller for Talespire
 // @author       Steven Drewers
 // @match        https://app.roll20.net/*
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
+// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.jsw
 // @downloadURL  https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
 // ==/UserScript==
 
@@ -16,56 +16,54 @@
 
 window.jQuery360 = $.noConflict(true);
 
-$(document).ready(function () {
-    function sanitizeData(data) {
+$(document).ready(function(){
+    function sanitizeData(data){
         var san_roll = {
             name: "",
             die: "",
             count: "",
             mods: []
         };
-
+        // prepare data (currently json object)
         var roll;
         try {
             roll = JSON.parse(data);
         } catch (e) {
             console.error("Failed to parse roll data:", e);
-            return null;
+            return;
         }
 
-        if (!roll || !roll.rolls || !roll.rolls[0] || !roll.rolls[0].vre) {
-            console.error("Invalid roll data structure:", roll);
-            return null;
-        }
+        var v = roll.rolls[0];
+        var current_roll = v.vre.rolls;
 
-        var current_roll = roll.rolls[0].vre.rolls;
-        $.each(current_roll, function () {
-            if (this.type === "R") {
+        $.each(current_roll, function(i, v) {
+            if (this.type == "R"){
                 san_roll.die = this.sides;
                 san_roll.count = this.dice;
-            } else if (this.type === "M") {
+            }
+            else if (this.type == "M"){
                 san_roll.mods.push(this.expr);
             }
         });
-
-        return san_roll;
+        // make talespire url
+        makeTalespireLink(san_roll);
     }
 
-    function makeTalespireLink(data) {
-        if (!data) {
-            return;
-        }
+    function makeTalespireLink(data){
+        var modifiers = "";
+        $.each(data.mods, function(i, v) {
+            modifiers = modifiers.concat(v);
+        });
 
-        var modifiers = data.mods.join('');
-        var sum;
-        try {
-            sum = new Function("return " + modifiers)();
-        } catch (e) {
-            console.error("Failed to evaluate modifiers:", e);
-            return;
+        console.log(modifiers);
+        var sum = eval(modifiers);
+        var talespire_string = "";
+        if (sum >= 0){
+            talespire_string = "talespire://dice/" + data.count + "d" + data.die + "+" + sum;
         }
-
-        var talespire_string = "talespire://dice/" + data.count + "d" + data.die + (sum >= 0 ? "+" + sum : sum);
+        else {
+            talespire_string = "talespire://dice/" + data.count + "d" + data.die + "-" + sum;
+        }
         console.log(talespire_string);
         location.href = talespire_string;
     }
@@ -74,17 +72,17 @@ $(document).ready(function () {
         send = window.XMLHttpRequest.prototype.send;
 
     function openReplacement(method, url, async, user, password) {
-        this._url = url;
+        this._url = url; // store the URL
         return open.apply(this, arguments);
     }
 
     function sendReplacement(data) {
-        if (this._url.includes("/rolls/")) {
+        // Only intercept requests related to specific Roll20 roll actions
+        if (this._url.includes("roll")) {
             try {
                 var parsedData = JSON.parse(data);
                 if (parsedData && parsedData.rolls) {
-                    var sanitizedData = sanitizeData(data);
-                    makeTalespireLink(sanitizedData);
+                    sanitizeData(data);
                 }
             } catch (e) {
                 console.error("Failed to process roll data:", e);
@@ -109,10 +107,11 @@ $(document).ready(function () {
     window.XMLHttpRequest.prototype.send = sendReplacement;
 });
 
-(function () {
+(function() {
     'use strict';
 
-    $(document).on("click", "button[type='roll']", function (event) {
+    // Your code here...
+    $("button[type='roll']").click(function(event){
         event.preventDefault();
         $(this).addClass("ivebeenclicked");
     });

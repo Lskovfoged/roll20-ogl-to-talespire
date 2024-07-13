@@ -8,7 +8,7 @@
 // @icon         data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js
 // @grant        none
-// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.jsw
+// @updateURL    https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
 // @downloadURL  https://raw.githubusercontent.com/Lskovfoged/roll20-ogl-to-talespire/main/userscript.js
 // ==/UserScript==
 

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Beyond The Spire",
-  "description": "DnDBeyond to TaleSpire Dice roller",
-  "version": "0.9.4",
+  "name": "Talespire20",
+  "description": "Roll20 to TaleSpire Dice roller",
+  "version": "0.0.1",
   "options_ui": {
     "page": "options.html",
     "open_in_tab": false
@@ -10,7 +10,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.dndbeyond.com/*"
+        "https://www.app.roll20.net/*"
       ],
       "js": [
         "main.js"

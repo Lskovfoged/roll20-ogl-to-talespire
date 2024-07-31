@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Talespire20",
+  "description": "Roll20 to TaleSpire Dice roller",
+  "version": "0.0.1",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.app.roll20.net/*"
+      ],
+      "js": [
+        "main.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{da1d921b-8e84-4326-9568-7f5e744fa918}",
+      "strict_min_version": "42.0"
+    }
+  }
+}
